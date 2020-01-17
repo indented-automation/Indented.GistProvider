@@ -57,3 +57,6 @@ temp
 **/managed-keys*
 **/*.jbk
 **/*.signed*
+
+# Module
+.oauth*

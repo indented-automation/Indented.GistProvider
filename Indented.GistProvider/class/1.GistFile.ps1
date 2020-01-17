@@ -5,18 +5,25 @@ class GistFile : SHiPSLeaf {
     [string] $Type
     [string] $Language
 
+    hidden [string] $accountName
     hidden [string] $rawUrl
 
-    GistFile([string]$name): base($name) { }
+    GistFile([string] $name): base($name) { }
 
-    GistFile([string]$name, [object] $fileInfo): base($name) {
+    GistFile(
+        [string] $name,
+        [string] $accountName,
+        [object] $fileInfo
+    ): base($name) {
         $this.GistName = $fileInfo.filename
         $this.Type = $fileInfo.type
         $this.Language = $fileInfo.Language
+
+        $this.accountName = $accountName
         $this.rawUrl = $fileInfo.raw_url
     }
 
     [string] GetContent() {
-        return InvokeGitHubRestMethod -Uri $this.rawUrl
+        return InvokeGistRestMethod -Uri $this.rawUrl
     }
 }

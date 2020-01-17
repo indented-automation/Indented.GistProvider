@@ -1,6 +1,6 @@
 $class = @(
     '1.GistFile'
-    '2.GistContainer'
+    '2.GistItem'
     '3.GistAccount'
     '4.GistRoot'
 )
@@ -11,7 +11,10 @@ foreach ($file in $class) {
 
 $private = @(
     'GetFunctionInfo'
-    'InvokeGitHubRestMethod'
+    'GetGistAuthInfo'
+    'GetGistOAuthSecret'
+    'GetGistOAuthToken'
+    'InvokeGistRestMethod'
 )
 
 foreach ($file in $private) {
@@ -20,10 +23,12 @@ foreach ($file in $private) {
 
 $public = @(
     'Add-GistAccount'
-    'Connect-GitHub'
+    'Connect-Gist'
     'Get-GistAccount'
     'Import-GistFunction'
+    'Register-GistOAuthSecret'
     'Remove-GistAccount'
+    'Unregister-GistOAuthSecret'
 )
 
 foreach ($file in $public) {
@@ -32,10 +37,12 @@ foreach ($file in $public) {
 
 $functionsToExport = @(
     'Add-GistAccount'
-    'Connect-GitHub'
+    'Connect-Gist'
     'Get-GistAccount'
     'Import-GistFunction'
+    'Register-GistOAuthSecret'
     'Remove-GistAccount'
+    'Unregister-GistOAuthSecret'
 )
 Export-ModuleMember -Function $functionsToExport
 
