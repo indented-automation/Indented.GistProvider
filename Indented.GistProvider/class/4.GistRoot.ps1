@@ -3,7 +3,7 @@ using namespace Microsoft.PowerShell.SHiPS
 class GistRoot : SHiPSDirectory {
     static [System.Collections.Generic.HashSet[String]] $Accounts = [System.Collections.Generic.HashSet[String]]::new()
 
-    GistRoot([string]$name): base($name) { }
+    GistRoot([string]$name) : base($name) { }
 
     [object[]] GetChildItem() {
         if ([GistRoot]::Accounts.Count -eq 0) {

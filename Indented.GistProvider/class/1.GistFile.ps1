@@ -8,13 +8,13 @@ class GistFile : SHiPSLeaf {
     hidden [string] $accountName
     hidden [string] $rawUrl
 
-    GistFile([string] $name): base($name) { }
+    GistFile([string] $name) : base($name) { }
 
     GistFile(
         [string] $name,
         [string] $accountName,
         [object] $fileInfo
-    ): base($name) {
+    ) : base($name) {
         $this.GistName = $fileInfo.filename
         $this.Type = $fileInfo.type
         $this.Language = $fileInfo.Language
@@ -25,5 +25,11 @@ class GistFile : SHiPSLeaf {
 
     [string] GetContent() {
         return InvokeGistRestMethod -Uri $this.rawUrl
+    }
+
+    [object] SetContent([string]$value, [string]$path) {
+        # Invoke rest method here.
+
+        return $this
     }
 }

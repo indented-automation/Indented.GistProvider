@@ -11,13 +11,13 @@ class GistItem : SHiPSDirectory {
     hidden [string] $accountName
     hidden [object] $files
 
-    GistItem([string] $name): base($name) { }
+    GistItem([string] $name) : base($name) { }
 
     GistItem(
         [string] $name,
         [string] $accountName,
         [object] $containerInfo
-    ): base($name) {
+    ) : base($name) {
         $this.Id = $containerInfo.Id
         $this.IsPublic = $containerInfo.Public
         $this.Created = Get-Date $containerInfo.created_at
