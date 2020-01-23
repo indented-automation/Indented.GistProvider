@@ -1,6 +1,6 @@
 using namespace Microsoft.PowerShell.SHiPS
 
-class GistFile : SHiPSLeaf {
+class GistFile : GistBase {
     [string] $GistName
     [string] $Type
     [string] $Language

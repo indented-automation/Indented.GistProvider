@@ -5,19 +5,19 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-GistAccount
+# Import-GistProvider
 
 ## SYNOPSIS
-Remove an account from the provider.
+{{ Fill in the Synopsis }}
 
 ## SYNTAX
 
 ```
-Remove-GistAccount [[-Name] <String>] [[-DriveName] <String>] [<CommonParameters>]
+Import-GistProvider [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Accounts may be removed from the provider using this command.
+{{ Fill in the Description }}
 
 ## EXAMPLES
 
@@ -30,43 +30,16 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Name
-{{ Fill Name Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DriveName
-{{ Fill DriveName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: Gist
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

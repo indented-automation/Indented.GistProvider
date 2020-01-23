@@ -10,8 +10,10 @@ function Add-GistAccount {
     [CmdletBinding()]
     param (
         # The name of the account to add to the provider.
-        [string]$Name
+        [string]$Name,
+
+        [string]$DriveName = 'Gist'
     )
 
-    $null = [GistRoot]::Accounts.Add($Name)
+    $null = (Get-PSDrive -Name $DriveName).Accounts.Add($Name)
 }

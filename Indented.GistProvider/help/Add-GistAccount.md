@@ -13,7 +13,7 @@ Adds a new account to the provider.
 ## SYNTAX
 
 ```
-Add-GistAccount [[-Name] <String>] [<CommonParameters>]
+Add-GistAccount [[-Name] <String>] [[-DriveName] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -41,6 +41,21 @@ Aliases:
 Required: False
 Position: 1
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DriveName
+{{ Fill DriveName Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: Gist
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

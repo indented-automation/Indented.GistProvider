@@ -73,9 +73,7 @@ function InvokeGistRestMethod {
             $next = $null
         }
 
-        $params = @{
-            Uri = $next
-        }
+        $params['Uri'] = $next
     } while ($next)
     $Global:progresspreference = $existingProgressPreference
 }

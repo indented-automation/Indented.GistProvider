@@ -9,8 +9,10 @@ function Remove-GistAccount {
 
     [CmdletBinding()]
     param (
-        [string]$Name
+        [string]$Name,
+
+        [string]$DriveName = 'Gist'
     )
 
-    $null = [GistRoot]::Accounts.Remove($Name)
+    (Get-PSDrive -Name $DriveName).Accounts.Remove($Name)
 }

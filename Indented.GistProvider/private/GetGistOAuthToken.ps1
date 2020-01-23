@@ -37,6 +37,7 @@ function GetGistOAuthToken {
             0,
             $buffer.Count
         )
+
         $context.Response.OutputStream.Close()
         $httpListener.Stop()
 
@@ -50,6 +51,9 @@ function GetGistOAuthToken {
             }
         }
         $response = InvokeGistRestMethod @params
+        if ($response -as [Byte[]]) {
+            $response = [String]::new([Char[]][Byte[]]$response)
+        }
 
         foreach ($entry in $response -split '&') {
             $key, $value = $entry -split '='

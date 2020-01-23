@@ -8,8 +8,8 @@ function Import-GistProvider {
     param ( )
 
     $sessionStateProviderEntry = [SessionStateProviderEntry]::new(
-        'GistProvider',
-        [Provider],
+        'Gist',
+        [GistProvider],
         $null
     )
 

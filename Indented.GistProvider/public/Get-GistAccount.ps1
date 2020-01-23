@@ -1,8 +1,10 @@
 function Get-GistAccount {
     [CmdletBinding()]
     param (
-        [string]$Name
+        [string]$Name,
+
+        [string]$DriveName = 'Gist'
     )
 
-    [GistRoot]::Accounts
+    (Get-PSDrive -Name $DriveName).Accounts
 }

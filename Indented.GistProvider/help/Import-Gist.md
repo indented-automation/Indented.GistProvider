@@ -21,16 +21,23 @@ Import-Gist attempts to import content into the current PowerShell session.
 
 By default, Import-Gist searches for and imports functions within a gist.
 Import-Gist can also
-create a dynamic module from a gist.
+import a dynamic module based on a gist.
 
 ## EXAMPLES
 
-### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+### EXAMPLE 1
+```
+Get-Item gist:\username\gistname.ps1\gistfile.ps1 | Import-Gist
 ```
 
-{{ Add example description here }}
+Import all functions from gistfile.ps1 into the current session.
+
+### EXAMPLE 2
+```
+Get-Item gist:\username\gistname.ps1 | Import-Gist -AsModule
+```
+
+Import all gist files from gistname.ps1 as a dynamic PowerShell module.
 
 ## PARAMETERS
 
