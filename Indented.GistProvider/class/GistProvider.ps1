@@ -25,10 +25,9 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
                 )
             }
             'Account' {
-                $this.WriteItemObject(
-                    [GistAccount]::new($path),
+                [GistAccount]::GetItem(
                     $path,
-                    $true
+                    $this
                 )
             }
             'Item' {
@@ -38,10 +37,13 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
                 )
             }
             'File' {
-                $this.WriteItemObject("IsAFile - $path", $path, $false)
+                [GistFile]::GetItem(
+                    $path,
+                    $this
+                )
             }
             'Invalid' {
-                $this.WriteItemObject("IsInvalid - $path", $path, $false)
+                throw 'Invalid path specification'
             }
         }
     }
@@ -53,7 +55,10 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
 
         $itemExists = switch ($this.GetPathType($path)) {
             'Drive'   { $true; break }
-            'Account' { $this.PSDriveInfo.Accounts.Contains($path); break }
+            'Account' {
+                $this.PSDriveInfo.Accounts.Contains($path)
+                break
+            }
             'Item'    {
                 [GistItem]::ItemExists(
                     $accountName,
@@ -61,6 +66,13 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
                     $this
                 )
                 break
+            }
+            'File'    {
+                [GistFile]::ItemExists(
+                    $accountName,
+                    $path,
+                    $this
+                )
             }
             default   { $false }
         }
@@ -97,9 +109,11 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
 
         switch ($this.GetPathType($path)) {
             'Drive' {
-                foreach ($accountName in $this.PSDriveInfo.Accounts) {
-                    [GistAccount]::new($accountName)
-                }
+                [GistDriveInfo]::GetChildItem(
+                    $path,
+                    $this,
+                    $this.PSDriveInfo
+                )
             }
             'Account' {
                 [GistAccount]::GetChildItem(
@@ -131,14 +145,14 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
                     $path,
                     $false,
                     $this
-                ).Name
+                )
             }
             'Item' {
                 [GistItem]::GetChildItem(
                     $path,
                     $false,
                     $this
-                ).Name
+                )
             }
         }
     }

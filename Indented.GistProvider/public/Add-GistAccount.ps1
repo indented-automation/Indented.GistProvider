@@ -16,4 +16,5 @@ function Add-GistAccount {
     )
 
     $null = (Get-PSDrive -Name $DriveName).Accounts.Add($Name)
+    [GistCache]::UpdateCache($Name)
 }

@@ -1,6 +1,6 @@
 class GistCache {
     static [Hashtable] $itemCache = @{}
-    static [System.Collections.Specialized.OrderedDictionary] $itemNameToID = [Ordered]@{}
+    static [Hashtable] $itemNameToID = @{}
 
     static [void] AddOrUpdateCacheItem(
         [GistItem] $itemInfo,
@@ -33,7 +33,7 @@ class GistCache {
             return [GistCache]::itemCache[$pathOrID]
         }
         else {
-            if ($id = [GistCache]::GetIdFromPath($pathOrID)) {
+            if ($id = [GistCache]::GetIDFromPath($pathOrID)) {
                 $items = foreach ($value in $id) {
                     [GistCache]::itemCache[$value]
                 }
@@ -55,6 +55,16 @@ class GistCache {
         return $items
     }
 
+    static [GistFile[]] GetCacheFile(
+        [string] $path
+    ) {
+        $fileName = Split-Path -Path $path -Leaf
+        $files = [GistCache]::GetCacheItem($path).Files |
+            Where-Object Name -eq $fileName
+
+        return $files
+    }
+
     static [bool] CacheItemExists(
         [string] $pathOrId
     ) {
@@ -62,8 +72,18 @@ class GistCache {
             return $true
         }
 
-        $id = [GistCache]::GetIdFromPath($pathOrId)
+        $id = [GistCache]::GetIDFromPath($pathOrId)
         return (-not [String]::IsNullOrWhiteSpace($id))
+    }
+
+    static [bool] CacheFileExists(
+        [string] $path
+    ) {
+        if ([GistCache]::GetCacheFile($path)) {
+            return $true
+        }
+
+        return $false
     }
 
     static [bool] AccountHasCache(
@@ -72,13 +92,12 @@ class GistCache {
         return [GistCache]::itemNameToID.Contains($accountName)
     }
 
-    hidden static [string] GetIdFromPath(
+    hidden static [string] GetIDFromPath(
         [string] $path
     ) {
-        $accountName, $null = $path -split '[\\/]'
-        $leafName = Split-Path -Path $path -Leaf
+        $accountName, $gistName, $null = $path -split '[\\/]'
 
-        return [GistCache]::itemNameToID[$accountName][$leafName]
+        return [GistCache]::itemNameToID[$accountName][$gistName]
     }
 
     hidden static [void] UpdateCache(
@@ -100,7 +119,7 @@ class GistCache {
             [GistCache]::itemCache[$id].Files = $response.files
         }
         else {
-            [GistCache]::itemNameToID[$accountName] = @{}
+            [GistCache]::itemNameToID[$accountName] = [Ordered]@{}
 
             $params = @{
                 RestMethod = 'users/{0}/gists' -f $accountName

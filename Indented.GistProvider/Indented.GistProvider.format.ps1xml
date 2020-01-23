@@ -40,10 +40,10 @@
                 <PropertyName>Name</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Id</PropertyName>
+                <PropertyName>Description</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
-                <PropertyName>Description</PropertyName>
+                <PropertyName>Id</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>

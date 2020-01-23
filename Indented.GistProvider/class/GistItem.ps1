@@ -1,12 +1,11 @@
 class GistItem : GistBase {
-    [string]   $Id
-    [bool]     $IsPublic
-    [DateTime] $Created
-    [DateTime] $Updated
-    [string]   $Description
-
-    hidden [string] $gistAccountName
-    hidden [object] $files
+    [string]     $ID
+    [bool]       $IsPublic
+    [DateTime]   $Created
+    [DateTime]   $Updated
+    [string]     $Description
+    [GistFile[]] $Files
+    [string]     $GistAccountName
 
     GistItem([string] $name) : base($name) { }
 
@@ -15,14 +14,20 @@ class GistItem : GistBase {
         [string] $accountName,
         [object] $containerInfo
     ) : base($name) {
-        $this.Id = $containerInfo.Id
+        $this.ID = $containerInfo.ID
         $this.IsPublic = $containerInfo.Public
         $this.Created = Get-Date $containerInfo.created_at
         $this.Updated = Get-Date $containerInfo.updated_at
         $this.Description = $containerInfo.description
-
-        $this.gistAccountName = $accountName
-        $this.files = $containerInfo.files
+        $this.GistAccountName = $accountName
+        $this.Files = foreach ($file in $containerInfo.Files.PSObject.Properties.Name) {
+            [GistFile]::new(
+                $file,
+                $accountName,
+                $containerInfo.Files.$file,
+                $this.ID
+            )
+        }
     }
 
     hidden static [void] GetItem(
@@ -31,9 +36,9 @@ class GistItem : GistBase {
     ) {
         $accountName = $provider.GetAccountName($path)
 
-        if ($provider.Force) {
-            [GistCache]::UpdateCache($accountName)
-        }
+        # if ($provider.Force) {
+        #     [GistCache]::UpdateCache($accountName)
+        # }
 
         foreach ($item in [GistCache]::GetCacheItem($path)) {
             $provider.WriteItemObject(
@@ -48,21 +53,9 @@ class GistItem : GistBase {
         [String]       $path,
         [GistProvider] $provider
     ) {
-        $accountName = $provider.GetAccountName($path)
-
-        $itemId = [GistCache]::GetIdFromPath($path)
-        if ($provider.force) {
-            [GistCache]::UpdateCache($accountName, $itemId)
-        }
-
-        $itemFiles = [GistCache]::GetCacheItem($itemId).Files
-        foreach ($file in $itemFiles.PSObject.Properties.Name) {
+        foreach ($file in [GistCache]::GetCacheItem($path).Files) {
             $provider.WriteItemObject(
-                [GistFile]::new(
-                    $file,
-                    $accountName,
-                    $itemFiles.files.$file
-                ),
+                $file,
                 $path,
                 $false
             )
@@ -74,10 +67,6 @@ class GistItem : GistBase {
         [string]       $path,
         [GistProvider] $provider
     ) {
-        if ($provider.Force -or -not [GistCache]::AccountHasCache($accountName)) {
-            [GistCache]::UpdateCache($accountName)
-        }
-
         return [GistCache]::CacheItemExists($path)
     }
 }
