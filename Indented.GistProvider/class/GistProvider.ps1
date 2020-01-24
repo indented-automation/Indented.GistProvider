@@ -1,3 +1,4 @@
+using namespace System.Management.Automation
 using namespace System.Management.Automation.Provider
 
 [CmdletProvider('Gist', [System.Management.Automation.Provider.ProviderCapabilities]::None)]
@@ -8,7 +9,31 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
     [PSDriveInfo] NewDrive(
         [PSDriveInfo] $drive
     ) {
+        if (-not $drive) {
+            return $null
+        }
+
         return [GistDriveInfo]::new($drive)
+    }
+
+    [PSDriveInfo] RemoveDrive(
+        [PSDriveInfo] $drive
+    ) {
+        if (-not $drive) {
+            $errorRecord = [ErrorRecord]::new(
+                [ArgumentNullException]::new('Drive does not exist'),
+                'NullDrive',
+                'InvalidArgument',
+                $null
+            )
+            Write-Error -ErrorRecord $errorRecord
+            return $null
+
+        }
+
+        [GistCache]::ClearCache()
+
+        return $drive
     }
     #endregion
 
@@ -54,12 +79,13 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
         $accountName = $this.GetAccountName($path)
 
         $itemExists = switch ($this.GetPathType($path)) {
-            'Drive'   { $true; break }
-            'Account' {
+            { $_ -ne 'File' } { $path = $path -replace '[\\/]$' }
+            'Drive'           { $true; break }
+            'Account'         {
                 $this.PSDriveInfo.Accounts.Contains($path)
                 break
             }
-            'Item'    {
+            'Item'            {
                 [GistItem]::ItemExists(
                     $accountName,
                     $path,
@@ -67,7 +93,7 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
                 )
                 break
             }
-            'File'    {
+            'File'            {
                 [GistFile]::ItemExists(
                     $accountName,
                     $path,
@@ -103,58 +129,24 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
         [string] $path,
         [bool]   $recurse
     ) {
-        if ($this.PSDriveInfo.Accounts.Count -eq 0) {
-            throw 'Must be connected to one or more accounts!'
-        }
-
-        switch ($this.GetPathType($path)) {
-            'Drive' {
-                [GistDriveInfo]::GetChildItem(
-                    $path,
-                    $this,
-                    $this.PSDriveInfo
-                )
-            }
-            'Account' {
-                [GistAccount]::GetChildItem(
-                    $path,
-                    $this
-                )
-            }
-            'Item' {
-                [GistItem]::GetChildItem(
-                    $path,
-                    $this
-                )
-            }
-        }
+        $this.GetChildItemsOrNames(
+            $path,
+            $false,
+            [ReturnContainers]::ReturnAllContainers,
+            $false
+        )
     }
 
     [void] GetChildNames(
         [string]           $path,
         [ReturnContainers] $returnContainers
     ) {
-        switch ($this.GetPathType($path)) {
-            'Drive' {
-                foreach ($accountName in $this.PSDriveInfo.Accounts) {
-                    [GistAccount]::new($accountName)
-                }
-            }
-            'Account' {
-                [GistAccount]::GetChildItem(
-                    $path,
-                    $false,
-                    $this
-                )
-            }
-            'Item' {
-                [GistItem]::GetChildItem(
-                    $path,
-                    $false,
-                    $this
-                )
-            }
-        }
+        $this.GetChildItemsOrNames(
+            $path,
+            $false,
+            $returnContainers,
+            $true
+        )
     }
 
     [bool] HasChildItems(
@@ -173,7 +165,8 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
     ) {
         switch ($this.GetPathType($path)) {
             'File' {
-                Get-Content $path | Set-Content -Destination $destination
+                Write-Host $path
+                # Get-Content $path | Set-Content -Destination $destination
             }
         }
     }
@@ -189,34 +182,46 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
         return $true
     }
 
-    # [string] GetChildName(
-    #     [string] $path
-    # ) {
+    [string] GetChildName(
+        [string] $path
+    ) {
+        if ($this.GetPathType($path) -eq 'Drive') {
+            return $path
+        }
+        return Split-Path $path -Leaf
+    }
 
-    #     if ($this.GetPathType($path) -eq 'Drive') {
-    #         return $path
-    #     }
-    #     return Split-Path $path -Leaf
-    # }
+    [string] GetParentPath(
+        [string] $path,
+        [string] $root
+    ) {
+        if ($path -eq '') {
+            return ''
+        }
+        else {
+            return Split-Path $path -Parent
+        }
+    }
 
-    # [string] GetParentPath(
-    #     [string] $path,
-    #     [string] $root
-    # ) {
-    #     if ($path -eq '') {
-    #         return ''
-    #     }
-    #     else {
-    #         return Split-Path $path -Parent
-    #     }
-    # }
+    [string] NormalizeRelativePath(
+        [string] $path,
+        [string] $basePath
+    ) {
+        if ([String]::IsNullOrEmpty($basePath)) {
+            return $path
+        }
+        return Join-Path -Path $basePath -ChildPath $path
+    }
     #endregion
 
     #region:Content
     [IContentReader] GetContentReader(
         [string] $path
     ) {
-        return [System.IO.StringReader]::new('Testing')
+        if ($this.GetPathType($path) -eq 'File') {
+            return [GistContentReader]::new($path)
+        }
+        return $null
     }
 
     [object] GetContentReaderDynamicParameters(
@@ -258,7 +263,7 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
             return [GistPathType]::Drive
         }
 
-        $tokens = $path -split '[\\/]'
+        $tokens = $path -replace '[\\/]$' -split '[\\/]'
         if ($gistPathType = @($tokens).Count -as [GistPathType]) {
             return $gistPathType
         }
@@ -275,6 +280,45 @@ class GistProvider : NavigationCmdletProvider, IContentCmdletProvider {
             return $accountName
         }
         return ''
+    }
+
+    [void] GetChildItemsOrNames(
+        [string]           $path,
+        [bool]             $recurse,
+        [ReturnContainers] $returnContainers,
+        [bool]             $nameOnly
+    ) {
+        if ($this.PSDriveInfo.Accounts.Count -eq 0) {
+            throw 'Must be connected to one or more accounts!'
+        }
+
+        switch ($this.GetPathType($path)) {
+            'Drive' {
+                [GistDriveInfo]::GetChildItemsOrNames(
+                    $path,
+                    $recurse,
+                    $nameOnly,
+                    $this,
+                    $this.PSDriveInfo
+                )
+            }
+            'Account' {
+                [GistAccount]::GetChildItemsOrNames(
+                    $path,
+                    $recurse,
+                    $nameOnly,
+                    $this
+                )
+            }
+            'Item' {
+                [GistItem]::GetChildItemsOrNames(
+                    $path,
+                    $recurse,
+                    $nameOnly,
+                    $this
+                )
+            }
+        }
     }
     #endregion
 }

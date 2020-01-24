@@ -96,7 +96,6 @@ class GistCache {
         [string] $path
     ) {
         $accountName, $gistName, $null = $path -split '[\\/]'
-
         return [GistCache]::itemNameToID[$accountName][$gistName]
     }
 
@@ -133,5 +132,10 @@ class GistCache {
                 [GistCache]::AddOrUpdateCacheItem($item, $accountName)
             }
         }
+    }
+
+    hidden static [void] ClearCache() {
+        [GistCache]::itemCache.Clear()
+        [GistCache]::itemNameToID.Clear()
     }
 }

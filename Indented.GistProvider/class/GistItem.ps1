@@ -34,8 +34,6 @@ class GistItem : GistBase {
         [string]       $path,
         [GistProvider] $provider
     ) {
-        $accountName = $provider.GetAccountName($path)
-
         # if ($provider.Force) {
         #     [GistCache]::UpdateCache($accountName)
         # }
@@ -49,14 +47,22 @@ class GistItem : GistBase {
         }
     }
 
-    hidden static [Void] GetChildItem(
+    hidden static [Void] GetChildItemsOrNames(
         [String]       $path,
+        [bool]         $recurse,
+        [bool]         $nameOnly,
         [GistProvider] $provider
     ) {
         foreach ($file in [GistCache]::GetCacheItem($path).Files) {
+            $childPath = Join-Path -Path $path -ChildPath $file.Name
+
+            if ($nameOnly) {
+                $file = $file.Name
+            }
+
             $provider.WriteItemObject(
                 $file,
-                $path,
+                $childPath,
                 $false
             )
         }

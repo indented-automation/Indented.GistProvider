@@ -38,7 +38,7 @@ class GistFile : GistBase {
             $provider.WriteItemObject(
                 $file,
                 $path,
-                $true
+                $false
             )
         }
     }

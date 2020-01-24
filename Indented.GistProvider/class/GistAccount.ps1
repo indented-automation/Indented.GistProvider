@@ -14,18 +14,35 @@ class GistAccount : GistBase {
         )
     }
 
-    hidden static [Void] GetChildItem(
+    hidden static [Void] GetChildItemsOrNames(
         [String]       $path,
+        [bool]         $recurse,
+        [bool]         $nameOnly,
         [GistProvider] $provider
     ) {
         $accountName = $provider.GetAccountName($path)
 
         foreach ($item in [GistCache]::GetAccountCacheItem($accountName)) {
+            $childPath = Join-Path -Path $path -ChildPath $item.Name
+
+            if ($nameOnly) {
+                $item = $item.Name
+            }
+
             $provider.WriteItemObject(
                 $item,
-                (Join-Path -Path $path -ChildPath $item.Name),
+                $childPath,
                 $true
             )
+
+            if ($recurse) {
+                [GistItem]::GetChildItemsOrNames(
+                    $childPath,
+                    $recurse,
+                    $nameOnly,
+                    $provider
+                )
+            }
         }
     }
 }
